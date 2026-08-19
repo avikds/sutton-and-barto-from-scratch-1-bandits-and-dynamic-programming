@@ -545,8 +545,54 @@ def value_iteration(mdp, gamma, theta):
 
     return state_values, policy
 
-# Step 19 - build_gambler_mdp (not yet solved)
-# TODO: implement
+# Step 19 - build_gambler_mdp
+def build_gambler_mdp(goal, head_prob):
+    """Build the gambler's-problem MDP as a dynamics dictionary.
+
+    Parameters
+    ----------
+    goal : int
+        Capital target (terminal winning state).
+    head_prob : float
+        Probability that the coin lands heads.
+
+    Returns
+    -------
+    mdp : dict
+        Keys 'n_states', 'n_actions', and 'P' (dynamics table).
+    """
+    n_states = goal + 1
+    n_actions = goal
+
+    # P[s][a] contains the transition list for action a.
+    P = [[] for _ in range(n_states)]
+
+    # Terminal states have one self-loop action.
+    P[0] = [[(1.0, 0, 0.0)]]
+    P[goal] = [[(1.0, goal, 0.0)]]
+
+    # Build transitions for each non-terminal capital state.
+    for s in range(1, goal):
+        max_stake = min(s, goal - s)
+
+        for stake in range(1, max_stake + 1):
+            next_state_heads = s + stake
+            next_state_tails = s - stake
+
+            head_reward = (
+                1.0 if next_state_heads == goal else 0.0
+            )
+
+            P[s].append([
+                (float(head_prob), next_state_heads, head_reward),
+                (float(1.0 - head_prob), next_state_tails, 0.0),
+            ])
+
+    return {
+        "n_states": n_states,
+        "n_actions": n_actions,
+        "P": P,
+    }
 
 # Step 20 - gambler_value_iteration (not yet solved)
 # TODO: implement
