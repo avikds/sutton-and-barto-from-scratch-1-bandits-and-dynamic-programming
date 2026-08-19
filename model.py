@@ -193,8 +193,34 @@ def optimistic_initialization(k, initial_value):
     # Create an array of k action-value estimates initialized optimistically.
     return np.full(k, initial_value, dtype=float)
 
-# Step 11 - ucb_action_select (not yet solved)
-# TODO: implement
+# Step 11 - ucb_action_select
+def ucb_action_select(q_values, action_counts, timestep, c):
+    """Select an action by upper-confidence-bound scores.
+
+    Args:
+        q_values (np.ndarray): Action-value estimates, shape (k,).
+        action_counts (np.ndarray): Visit counts per action, shape (k,).
+        timestep (int): Current time step t (>= 1).
+        c (float): Exploration constant.
+
+    Returns:
+        int: Index of the selected action.
+    """
+    # Any unvisited arm is treated as having an infinite UCB score.
+    unvisited = action_counts == 0
+
+    if np.any(unvisited):
+        # np.argmax returns the smallest index in case of ties.
+        return int(np.argmax(unvisited))
+
+    # Calculate the UCB score for every visited arm.
+    ucb_scores = q_values + c * np.sqrt(
+        np.log(timestep) / action_counts
+    )
+
+    # Select the arm with the highest UCB score.
+    # np.argmax breaks ties by choosing the smallest index.
+    return int(np.argmax(ucb_scores))
 
 # Step 12 - gradient_bandit_update (not yet solved)
 # TODO: implement
