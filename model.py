@@ -594,8 +594,69 @@ def build_gambler_mdp(goal, head_prob):
         "P": P,
     }
 
-# Step 20 - gambler_value_iteration (not yet solved)
-# TODO: implement
+# Step 20 - gambler_value_iteration
+def gambler_value_iteration(goal, head_prob, theta, gamma=1.0):
+    """Solve the gambler's problem with value iteration.
+
+    Parameters
+    ----------
+    goal : int
+        Capital target (terminal winning state).
+    head_prob : float
+        Probability the coin lands heads.
+    theta : float
+        Stop when the largest value change in a sweep is below this.
+    gamma : float, optional
+        Discount factor (default 1.0).
+
+    Returns
+    -------
+    state_values : np.ndarray, shape (goal+1,)
+        Optimal values; state_values[0] and state_values[goal] are 0.
+    """
+    state_values = np.zeros(goal + 1, dtype=float)
+
+    while True:
+        delta = 0.0
+        new_values = state_values.copy()
+
+        # Only non-terminal capitals need Bellman optimality updates.
+        for capital in range(1, goal):
+            max_stake = min(capital, goal - capital)
+            action_values = []
+
+            for stake in range(1, max_stake + 1):
+                win_state = capital + stake
+                lose_state = capital - stake
+
+                win_reward = 1.0 if win_state == goal else 0.0
+
+                expected_return = (
+                    head_prob
+                    * (win_reward + gamma * state_values[win_state])
+                    + (1.0 - head_prob)
+                    * gamma
+                    * state_values[lose_state]
+                )
+
+                action_values.append(expected_return)
+
+            new_values[capital] = max(action_values)
+            delta = max(
+                delta,
+                abs(new_values[capital] - state_values[capital])
+            )
+
+        # Keep terminal values fixed at zero.
+        new_values[0] = 0.0
+        new_values[goal] = 0.0
+
+        state_values = new_values
+
+        if delta < theta:
+            break
+
+    return state_values
 
 # Step 21 - extract_optimal_stakes (not yet solved)
 # TODO: implement
