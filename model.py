@@ -505,8 +505,45 @@ def policy_iteration(mdp, gamma, theta):
 
         policy = improved_policy
 
-# Step 18 - value_iteration (not yet solved)
-# TODO: implement
+# Step 18 - value_iteration
+def value_iteration(mdp, gamma, theta):
+    """Solve an MDP using value iteration and recover an optimal policy."""
+    n_states = mdp["n_states"]
+    n_actions = mdp["n_actions"]
+    P = mdp["P"]
+
+    state_values = np.zeros(n_states, dtype=float)
+
+    while True:
+        delta = 0.0
+        new_values = state_values.copy()
+
+        for state in range(n_states):
+            action_values = np.zeros(n_actions, dtype=float)
+
+            for action in range(n_actions):
+                for probability, next_state, reward in P[state][action]:
+                    action_values[action] += probability * (
+                        reward + gamma * state_values[next_state]
+                    )
+
+            # Bellman optimality backup.
+            new_values[state] = np.max(action_values)
+
+            delta = max(
+                delta,
+                abs(new_values[state] - state_values[state])
+            )
+
+        state_values = new_values
+
+        if delta < theta:
+            break
+
+    # Recover the deterministic greedy policy from the converged values.
+    policy = greedy_policy_improvement(state_values, mdp, gamma)
+
+    return state_values, policy
 
 # Step 19 - build_gambler_mdp (not yet solved)
 # TODO: implement
