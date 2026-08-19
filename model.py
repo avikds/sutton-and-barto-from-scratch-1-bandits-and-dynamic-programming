@@ -167,8 +167,13 @@ def average_bandit_curves(k, n_runs, n_steps, epsilon, seed):
 
     return mean_rewards, mean_optimal_flags
 
-# Step 8 - apply_random_walk_drift (not yet solved)
-# TODO: implement
+# Step 8 - apply_random_walk_drift
+def apply_random_walk_drift(true_values, drift_std, rng):
+    # Draw an independent zero-mean Gaussian increment for each arm.
+    drift = rng.normal(loc=0.0, scale=drift_std, size=true_values.shape)
+
+    # Apply the random-walk increment elementwise.
+    return true_values + drift
 
 # Step 9 - constant_step_size_update (not yet solved)
 # TODO: implement
