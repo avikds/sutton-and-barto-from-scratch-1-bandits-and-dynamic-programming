@@ -44,8 +44,14 @@ def sample_average_update(q_values, action_counts, action, reward):
 
     return q_new, counts_new
 
-# Step 4 - epsilon_greedy_action (not yet solved)
-# TODO: implement
+# Step 4 - epsilon_greedy_action
+def epsilon_greedy_action(q_values, epsilon, rng):
+    # Explore with probability epsilon.
+    if rng.random() < epsilon:
+        return int(rng.integers(0, len(q_values)))
+
+    # Exploit: np.argmax returns the smallest index on ties.
+    return int(np.argmax(q_values))
 
 # Step 5 - run_bandit_episode (not yet solved)
 # TODO: implement
