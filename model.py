@@ -94,8 +94,51 @@ def run_bandit_episode(true_values, n_steps, epsilon, rng):
 
     return rewards, actions
 
-# Step 6 - track_rewards_and_optimal_actions (not yet solved)
-# TODO: implement
+# Step 6 - track_rewards_and_optimal_actions
+def track_rewards_and_optimal_actions(true_values, n_steps, epsilon, rng):
+    """Run one episode tracking rewards and optimal-arm choices.
+
+    Args:
+        true_values (np.ndarray): Shape (k,) true mean reward of each arm.
+        n_steps (int): Number of pulls in the episode.
+        epsilon (float): Exploration probability for epsilon-greedy.
+        rng (np.random.Generator): Seeded random generator.
+
+    Returns:
+        tuple: (rewards, optimal_flags) each shape (n_steps,).
+            optimal_flags entries are 0.0 or 1.0 floats.
+    """
+    k = len(true_values)
+
+    # Initialize action-value estimates and action counts.
+    q_values = np.zeros(k, dtype=float)
+    action_counts = np.zeros(k, dtype=int)
+
+    # The optimal arm is the one with the highest true action value.
+    # np.argmax selects the smallest index in case of a tie.
+    optimal_action = int(np.argmax(true_values))
+
+    # Allocate output arrays.
+    rewards = np.zeros(n_steps, dtype=float)
+    optimal_flags = np.zeros(n_steps, dtype=float)
+
+    for step in range(n_steps):
+        # Select an action epsilon-greedily.
+        action = epsilon_greedy_action(q_values, epsilon, rng)
+
+        # Pull the selected arm.
+        reward = pull_arm(true_values, action, rng)
+
+        # Update the estimated action value using sample averages.
+        q_values, action_counts = sample_average_update(
+            q_values, action_counts, action, reward
+        )
+
+        # Store reward and whether the optimal arm was selected.
+        rewards[step] = reward
+        optimal_flags[step] = float(action == optimal_action)
+
+    return rewards, optimal_flags
 
 # Step 7 - average_bandit_curves (not yet solved)
 # TODO: implement
