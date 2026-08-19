@@ -32,6 +32,21 @@ python scaffold.py
 - [x] **20.** gambler_value_iteration
 - [x] **21.** extract_optimal_stakes
 
----
+## Results
 
-Built on Deep-ML.
+```
+True action values: [ 1.764  0.4    0.979  2.241  1.868 -0.977  0.95  -0.151 -0.103  0.411]
+Episode mean reward (eps=0.1): 1.0506
+Avg reward @200: 1.1731
+Optimal action % @200: 0.52
+Mean |drift|: 0.00844
+Optimistic Q init: [5. 5. 5.] ...
+UCB first action: 0
+Gradient prefs sample: [ 0.045 -0.005 -0.005]
+Parameter study results: {'epsilon_greedy(0.1)': 1.1666507230150729, 'optimistic(5.0)': 1.2177748821441838, 'ucb(2.0)': 1.4999494200552939, 'gradient(0.1)': 1.3928004528026952}
+Policy iteration V[0]: 0.0
+Policy iteration policy (flat): [0 3 3 2 0] ...
+Value iteration V[0]: 0.0
+Gambler V at [1, 25, 50, 75, 99] : [0.0021, 0.16, 0.4, 0.64, 0.9643]
+Optimal stakes at [1, 25, 50, 75, 99] : [1, 25, 50, 25, 1]
+```
