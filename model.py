@@ -406,8 +406,56 @@ def build_gridworld_mdp():
         "P": P,
     }
 
-# Step 15 - iterative_policy_evaluation (not yet solved)
-# TODO: implement
+# Step 15 - iterative_policy_evaluation
+def iterative_policy_evaluation(policy, mdp, gamma, theta):
+    """Compute the state-value function for a fixed deterministic or stochastic policy."""
+    n_states = mdp["n_states"]
+    n_actions = mdp["n_actions"]
+    P = mdp["P"]
+
+    values = np.zeros(n_states, dtype=float)
+
+    # Determine whether the policy is deterministic or stochastic.
+    policy = np.asarray(policy)
+
+    if policy.ndim == 1:
+        # Deterministic policy: one action per state.
+        policy_probs = np.zeros((n_states, n_actions), dtype=float)
+        for state in range(n_states):
+            policy_probs[state, int(policy[state])] = 1.0
+    elif policy.ndim == 2:
+        # Stochastic policy: probability of each action in every state.
+        policy_probs = policy
+    else:
+        raise ValueError("policy must have shape (n_states,) or (n_states, n_actions)")
+
+    while True:
+        delta = 0.0
+        new_values = values.copy()
+
+        for state in range(n_states):
+            value = 0.0
+
+            for action in range(n_actions):
+                action_probability = policy_probs[state, action]
+
+                if action_probability == 0.0:
+                    continue
+
+                for probability, next_state, reward in P[state][action]:
+                    value += action_probability * probability * (
+                        reward + gamma * values[next_state]
+                    )
+
+            new_values[state] = value
+            delta = max(delta, abs(value - values[state]))
+
+        values = new_values
+
+        if delta < theta:
+            break
+
+    return values
 
 # Step 16 - greedy_policy_improvement (not yet solved)
 # TODO: implement
