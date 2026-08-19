@@ -359,8 +359,52 @@ def bandit_parameter_study(n_runs, n_steps, seed, settings):
 
     return results
 
-# Step 14 - build_gridworld_mdp (not yet solved)
-# TODO: implement
+# Step 14 - build_gridworld_mdp
+def build_gridworld_mdp():
+    """Build the classic 4x4 Sutton & Barto gridworld MDP."""
+    n_states = 16
+    n_actions = 4
+
+    # P[s][a] = [(probability, next_state, reward)]
+    P = [[[] for _ in range(n_actions)] for _ in range(n_states)]
+
+    # Actions: north, east, south, west
+    directions = {
+        0: (-1, 0),
+        1: (0, 1),
+        2: (1, 0),
+        3: (0, -1),
+    }
+
+    terminal_states = {0, 15}
+
+    for s in range(n_states):
+        row = s // 4
+        col = s % 4
+
+        for action in range(n_actions):
+            # Terminal states self-loop with zero reward.
+            if s in terminal_states:
+                P[s][action] = [(1.0, s, 0.0)]
+                continue
+
+            dr, dc = directions[action]
+            next_row = row + dr
+            next_col = col + dc
+
+            # Moves outside the grid leave the agent in the same state.
+            if not (0 <= next_row < 4 and 0 <= next_col < 4):
+                next_state = s
+            else:
+                next_state = 4 * next_row + next_col
+
+            P[s][action] = [(1.0, next_state, -1.0)]
+
+    return {
+        "n_states": n_states,
+        "n_actions": n_actions,
+        "P": P,
+    }
 
 # Step 15 - iterative_policy_evaluation (not yet solved)
 # TODO: implement
