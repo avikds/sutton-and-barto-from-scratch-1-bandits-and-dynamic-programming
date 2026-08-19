@@ -175,8 +175,18 @@ def apply_random_walk_drift(true_values, drift_std, rng):
     # Apply the random-walk increment elementwise.
     return true_values + drift
 
-# Step 9 - constant_step_size_update (not yet solved)
-# TODO: implement
+# Step 9 - constant_step_size_update
+def constant_step_size_update(q_values, action, reward, alpha):
+    # Work on a copy so the input array is not modified in place.
+    updated_q_values = np.array(q_values, copy=True)
+
+    # Constant step-size update:
+    # Q <- Q + alpha * (reward - Q)
+    updated_q_values[action] += alpha * (
+        reward - updated_q_values[action]
+    )
+
+    return updated_q_values
 
 # Step 10 - optimistic_initialization (not yet solved)
 # TODO: implement
