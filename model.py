@@ -239,8 +239,125 @@ def gradient_bandit_update(preferences, action, reward, average_reward, alpha):
 
     return updated_preferences
 
-# Step 13 - bandit_parameter_study (not yet solved)
-# TODO: implement
+# Step 13 - bandit_parameter_study
+def bandit_parameter_study(n_runs, n_steps, seed, settings):
+    """Compare bandit strategies and report final average reward per setting."""
+    results = {}
+
+    for setting in settings:
+        method = setting["method"]
+        param = setting["param"]
+        nonstationary = setting.get("nonstationary", False)
+
+        label = f"{method}({param})"
+        if nonstationary:
+            label += ",ns"
+
+        final_rewards = np.zeros(n_runs, dtype=float)
+
+        for i in range(n_runs):
+            run_seed = seed + i
+            rng = np.random.default_rng(run_seed)
+
+            # Stationary testbed or zero-initialized nonstationary testbed.
+            if nonstationary:
+                true_values = np.zeros(10, dtype=float)
+            else:
+                true_values = create_bandit_testbed(10, run_seed)
+
+            q_values = np.zeros(10, dtype=float)
+            action_counts = np.zeros(10, dtype=int)
+            preferences = np.zeros(10, dtype=float)
+
+            # Running average reward for the gradient-bandit baseline.
+            average_reward = 0.0
+
+            total_reward = 0.0
+
+            for step in range(n_steps):
+                timestep = step + 1
+
+                # Select an action according to the requested method.
+                if method == "epsilon_greedy":
+                    action = epsilon_greedy_action(q_values, param, rng)
+
+                elif method == "constant_step":
+                    action = epsilon_greedy_action(q_values, 0.1, rng)
+
+                elif method == "optimistic":
+                    if step == 0:
+                        q_values = optimistic_initialization(10, param)
+
+                    action = epsilon_greedy_action(q_values, 0.0, rng)
+
+                elif method == "ucb":
+                    action = ucb_action_select(
+                        q_values, action_counts, timestep, param
+                    )
+
+                elif method == "gradient":
+                    # Stable softmax action selection.
+                    shifted = preferences - np.max(preferences)
+                    exp_preferences = np.exp(shifted)
+                    probabilities = exp_preferences / np.sum(exp_preferences)
+                    action = int(rng.choice(10, p=probabilities))
+
+                else:
+                    raise ValueError(f"Unknown bandit method: {method}")
+
+                # Obtain stochastic reward from the selected arm.
+                reward = pull_arm(true_values, action, rng)
+
+                # Update estimates/preferences.
+                if method == "constant_step":
+                    q_values = constant_step_size_update(
+                        q_values, action, reward, param
+                    )
+                    action_counts[action] += 1
+
+                elif method == "optimistic":
+                    q_values = constant_step_size_update(
+                        q_values, action, reward, 0.1
+                    )
+                    action_counts[action] += 1
+
+                elif method == "ucb":
+                    q_values, action_counts = sample_average_update(
+                        q_values, action_counts, action, reward
+                    )
+
+                elif method == "epsilon_greedy":
+                    q_values, action_counts = sample_average_update(
+                        q_values, action_counts, action, reward
+                    )
+
+                elif method == "gradient":
+                    preferences = gradient_bandit_update(
+                        preferences,
+                        action,
+                        reward,
+                        average_reward,
+                        param,
+                    )
+
+                    # Baseline includes the current reward.
+                    average_reward += (reward - average_reward) / timestep
+
+                total_reward += reward
+
+                # Apply nonstationary drift after each step.
+                if nonstationary:
+                    true_values = apply_random_walk_drift(
+                        true_values, 0.01, rng
+                    )
+
+            # Mean reward at the final step means the episode's
+            # final-step reward for this run.
+            final_rewards[i] = reward
+
+        results[label] = float(np.mean(final_rewards))
+
+    return results
 
 # Step 14 - build_gridworld_mdp (not yet solved)
 # TODO: implement
