@@ -140,8 +140,32 @@ def track_rewards_and_optimal_actions(true_values, n_steps, epsilon, rng):
 
     return rewards, optimal_flags
 
-# Step 7 - average_bandit_curves (not yet solved)
-# TODO: implement
+# Step 7 - average_bandit_curves
+def average_bandit_curves(k, n_runs, n_steps, epsilon, seed):
+    # Store the results from each independent run.
+    all_rewards = np.zeros((n_runs, n_steps), dtype=float)
+    all_optimal_flags = np.zeros((n_runs, n_steps), dtype=float)
+
+    for i in range(n_runs):
+        run_seed = seed + i
+
+        # Build a fresh testbed and RNG for this run.
+        true_values = create_bandit_testbed(k, run_seed)
+        rng = np.random.default_rng(run_seed)
+
+        # Run the episode and track rewards/optimal-arm choices.
+        rewards, optimal_flags = track_rewards_and_optimal_actions(
+            true_values, n_steps, epsilon, rng
+        )
+
+        all_rewards[i] = rewards
+        all_optimal_flags[i] = optimal_flags
+
+    # Average across independent runs for each time step.
+    mean_rewards = np.mean(all_rewards, axis=0)
+    mean_optimal_flags = np.mean(all_optimal_flags, axis=0)
+
+    return mean_rewards, mean_optimal_flags
 
 # Step 8 - apply_random_walk_drift (not yet solved)
 # TODO: implement
